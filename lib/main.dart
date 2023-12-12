@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yandex_route_mobile/route_page.dart';
+import 'package:yandex_route_mobile/car_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const RoutePage(),
+      home: const DrivingPage(),
     );
   }
 }

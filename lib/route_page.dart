@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart';
 
 Point getAveragePoint = const Point(
-  latitude: 41.311081,
-  longitude: 69.240562,
+  latitude: 41.316435,
+  longitude: 69.248385,
 );
 
 Point officePoint = const Point(
@@ -62,7 +62,7 @@ class _RoutePageState extends State<RoutePage> {
                 _controller.moveCamera(
                   animation: const MapAnimation(
                     type: MapAnimationType.linear,
-                    duration: 1,
+                    duration: 0.1,
                   ),
                   CameraUpdate.newCameraPosition(
                     CameraPosition(
@@ -136,7 +136,7 @@ class _RoutePageState extends State<RoutePage> {
                 _controller.moveCamera(
                   animation: const MapAnimation(
                     type: MapAnimationType.linear,
-                    duration: 1,
+                    duration: 0.1,
                   ),
                   CameraUpdate.newCameraPosition(
                     CameraPosition(
@@ -180,23 +180,18 @@ class _RoutePageState extends State<RoutePage> {
       print('Error: ${result.error}');
       return;
     }
-    setState(() {
-      results.add(result);
-    });
-    setState(
-      () {
-        result.routes!.asMap().forEach(
-          (i, route) {
-            mapObjects.add(
-              PolylineMapObject(
-                mapId: MapObjectId('route_${i}_polyline'),
-                polyline: Polyline(points: route.geometry),
-                strokeColor:
-                    Colors.primaries[Random().nextInt(Colors.primaries.length)],
-                strokeWidth: 3,
-              ),
-            );
-          },
+    results.add(result);
+
+    result.routes!.asMap().forEach(
+      (i, route) {
+        mapObjects.add(
+          PolylineMapObject(
+            mapId: MapObjectId('route_${i}_polyline'),
+            polyline: Polyline(points: route.geometry),
+            strokeColor:
+                Colors.primaries[Random().nextInt(Colors.primaries.length)],
+            strokeWidth: 3,
+          ),
         );
       },
     );
