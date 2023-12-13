@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart';
+import 'package:yandex_route_mobile/build_variants.dart';
 import 'package:yandex_route_mobile/calculate_point.dart';
 
 class DrivingPage extends StatelessWidget {
@@ -22,52 +22,50 @@ class _DrivingExampleState extends State<_DrivingExample> {
     startPlacemark,
     endPlacemark,
   ];
-  final PlacemarkMapObject startPlacemark = PlacemarkMapObject(
-    mapId: const MapObjectId('start_placemark'),
-    point: const Point(
-      latitude: 41.3488976,
-      longitude: 69.3373859,
-    ),
-    icon: PlacemarkIcon.single(
-      PlacemarkIconStyle(
-          image: BitmapDescriptor.fromAssetImage('assets/route_start.png'),
-          scale: 0.3),
-    ),
-  );
 
-  final PlacemarkMapObject endPlacemark = PlacemarkMapObject(
-    mapId: const MapObjectId('end_placemark'),
-    icon: PlacemarkIcon.single(PlacemarkIconStyle(
-        image: BitmapDescriptor.fromAssetImage('assets/route_end.png'),
-        scale: 0.3)),
-    point: const Point(
-      latitude: 41.311081,
-      longitude: 69.240562,
-    ),
-  );
+  late PlacemarkMapObject startPlacemark;
+  late PlacemarkMapObject endPlacemark;
 
   @override
   Widget build(BuildContext context) {
     return Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          Expanded(child: YandexMap(mapObjects: mapObjects)),
-          const SizedBox(height: 20),
-          Expanded(
-              child: SingleChildScrollView(
-                  child: Column(children: [
-            ElevatedButton(
-              onPressed: _requestRoutes,
-              child: const Text('Build route'),
-            ),
-          ])))
-        ]);
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        // Expanded(
+        //     child: YandexMap(
+        //         // mapObjects: mapObjects,
+        //         )),
+        const SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: () {
+            _requestRoutes(0);
+          },
+          child: const Text('Build route 1'),
+        ),
+        const SizedBox(height: 30),
+        ElevatedButton(
+          onPressed: () {
+            _requestRoutes(1);
+          },
+          child: const Text('Build route 2'),
+        ),
+        const SizedBox(height: 30),
+
+        ElevatedButton(
+          onPressed: () {
+            _requestRoutes(2);
+          },
+          child: const Text('Build route 3'),
+        )
+      ],
+    );
   }
 
-  Future<void> _requestRoutes() async {
-    print('Points: ${startPlacemark.point},${endPlacemark.point}');
-
+  Future<void> _requestRoutes(int i) async {
+    startPlacemark = startPlaces[i];
+    endPlacemark = endPlaces[i];
     var resultWithSession = YandexDriving.requestRoutes(
         points: [
           RequestPoint(
@@ -109,7 +107,6 @@ class _SessionState extends State<_SessionPage> {
   ];
 
   final List<DrivingSessionResult> results = [];
-  bool _progress = true;
   double zoom = 16;
   late final YandexMapController mapController;
 
@@ -130,104 +127,44 @@ class _SessionState extends State<_SessionPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text('Driving ${widget.session.id}')),
-        body: Container(
-            padding: const EdgeInsets.all(8),
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: 400,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        YandexMap(
-                          onMapCreated: (controller) async {
-                            controller.moveCamera(
-                              CameraUpdate.newCameraPosition(
-                                const CameraPosition(
-                                    target: Point(
-                                      latitude: 41.3488976,
-                                      longitude: 69.3373859,
-                                    ),
-                                    zoom: 15),
-                              ),
-                            );
-                          },
-                          onCameraPositionChanged:
-                              (cameraPosition, reason, finished) {
-                            zoom = cameraPosition.zoom;
-                            print(zoom);
-                          },
-                          mapObjects: mapObjects,
+      appBar: AppBar(title: Text('Driving ${widget.session.id}')),
+      body: Container(
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: 400,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  YandexMap(
+                    zoomGesturesEnabled: false,
+                    onMapCreated: (controller) async {
+                      mapController = controller;
+                      controller.moveCamera(
+                        CameraUpdate.newCameraPosition(
+                          CameraPosition(
+                              target: widget.startPlacemark.point, zoom: 15),
                         ),
-                      ],
-                    ),
+                      );
+                    },
+                    onCameraPositionChanged:
+                        (cameraPosition, reason, finished) {
+                      zoom = cameraPosition.zoom;
+                    },
+                    mapObjects: mapObjects,
                   ),
-                  const SizedBox(height: 20),
-                  Expanded(
-                      child: SingleChildScrollView(
-                          child: Column(children: <Widget>[
-                    SizedBox(
-                        height: 60,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            !_progress
-                                ? Container()
-                                : TextButton.icon(
-                                    icon: const CircularProgressIndicator(),
-                                    label: const Text('Cancel'),
-                                    onPressed: _cancel)
-                          ],
-                        )),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Flexible(
-                          child: Padding(
-                              padding: const EdgeInsets.only(top: 20),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: _getList(),
-                              )),
-                        ),
-                      ],
-                    ),
-                  ])))
-                ])));
-  }
-
-  List<Widget> _getList() {
-    final list = <Widget>[];
-
-    if (results.isEmpty) {
-      list.add((const Text('Nothing found')));
-    }
-
-    for (var r in results) {
-      list.add(Container(height: 20));
-
-      r.routes!.asMap().forEach((i, route) {
-        list.add(
-            Text('Route $i: ${route.metadata.weight.timeWithTraffic.text}'));
-      });
-
-      list.add(Container(height: 20));
-    }
-
-    return list;
-  }
-
-  Future<void> _cancel() async {
-    await widget.session.cancel();
-
-    setState(() {
-      _progress = false;
-    });
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _close() async {
@@ -239,10 +176,6 @@ class _SessionState extends State<_SessionPage> {
   }
 
   Future<void> _handleResult(DrivingSessionResult result) async {
-    setState(() {
-      _progress = false;
-    });
-
     if (result.error != null) {
       debugPrint('Error: ${result.error}');
       return;
@@ -257,55 +190,71 @@ class _SessionState extends State<_SessionPage> {
     });
     mapObjects.add(
       PolylineMapObject(
-        mapId: MapObjectId('route_${result.routes?.first}_polyline'),
+        mapId: const MapObjectId('route_${1}_polyline'),
         polyline: Polyline(points: result.routes?.first.geometry ?? []),
         strokeColor: Colors.green,
         strokeWidth: 2,
       ),
     );
+    print('route_${1}_polyline');
     driveCar(result.routes?.first.geometry ?? [], result);
   }
 
   driveCar(List<Point> points, DrivingSessionResult result) async {
-    // List<Point> pointsRemove = [];
-    // pointsRemove.addAll(points);
+    for (int i = 0; i < points.length - 1; i++) {
+      await Future.delayed(const Duration(milliseconds: 100));
 
-    for (int i = 0; i < points.length; i++) {
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      final PlacemarkMapObject carPlaceMark = PlacemarkMapObject(
-        mapId: const MapObjectId('car_placemark'),
-        point: points[i],
-        direction: 90 -
-            calculateInitialBearing(
-              points[i],
-              points[i + 1],
-            ),
-        opacity: 1,
-        icon: PlacemarkIcon.single(
-          PlacemarkIconStyle(
-            image: BitmapDescriptor.fromAssetImage('assets/car.png'),
-            scale: zoom < 13 ? zoom / 35 : zoom / 25,
-            rotationType: RotationType.rotate,
-          ),
-        ),
+      num distancePoints = distance(
+        pointLat: points[i].latitude,
+        pointLong: points[i].longitude,
+        latLong: points[i + 1],
       );
 
-      mapObjects.add(carPlaceMark);
+      List<Point> betweenPoints = generatePointsBetween(
+          points[i], points[i + 1], (distancePoints * 1000).toInt());
+
+      for (var j = 0; j < betweenPoints.length - 1; j++) {
+        await Future.delayed(
+          const Duration(milliseconds: 100),
+        );
+        final PlacemarkMapObject carPlaceMark = PlacemarkMapObject(
+          mapId: const MapObjectId('car_placemark'),
+          point: betweenPoints[j],
+          direction: 90 -
+              calculateInitialBearing(
+                betweenPoints[j],
+                betweenPoints[j + 1],
+              ),
+          opacity: 1,
+          icon: PlacemarkIcon.single(
+            PlacemarkIconStyle(
+              image: BitmapDescriptor.fromAssetImage('assets/car.png'),
+              scale: zoom < 13 ? zoom / 35 : zoom / 25,
+              rotationType: RotationType.rotate,
+            ),
+          ),
+        );
+        mapObjects.removeWhere((obj) => obj.mapId.value == 'car_placemark');
+        mapObjects.add(carPlaceMark);
+        setState(() {
+          mapController.moveCamera(CameraUpdate.newCameraPosition(
+              CameraPosition(target: betweenPoints[j])));
+        });
+      }
+
+      points.removeAt(i);
+      i--;
       setState(() {});
-
-      // if (kDebugMode) {
-      //   print(pointsRemove.length);
-      // }
-
-      // mapObjects.add(
-      //   PolylineMapObject(
-      //     mapId: MapObjectId('route_${result.routes?.first}_polyline'),
-      //     polyline: Polyline(points: pointsRemove),
-      //     strokeColor: Colors.green,
-      //     strokeWidth: 2,
-      //   ),
-      // );
+      mapObjects.removeWhere(
+          (element) => element.mapId.value == 'route_${1}_polyline');
+      mapObjects.add(
+        PolylineMapObject(
+          mapId: const MapObjectId('route_${1}_polyline'),
+          polyline: Polyline(points: [...points]),
+          strokeColor: Colors.green,
+          strokeWidth: 2,
+        ),
+      );
     }
   }
 }

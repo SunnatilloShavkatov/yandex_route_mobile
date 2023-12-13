@@ -8,6 +8,7 @@ Point calculateNearestPoint({
   final List<Point> pointSort = points;
   pointSort.sort(
     (a, b) => distance(
+      
       pointLat: a.latitude,
       pointLong: a.longitude,
       latLong: point,
@@ -44,6 +45,7 @@ num distance({
           math.cos(pointLat) *
           math.pow(math.sin(nearbyLong / 2), 2);
   final num c = 2 * math.asin(math.sqrt(a));
+  print('dictande: ${c * r}');
   return c * r;
 }
 
@@ -61,4 +63,17 @@ double calculateInitialBearing(Point point1, Point point2) {
   initialBearing = (initialBearing * 180 / math.pi + 360) % 360;
 
   return initialBearing;
+}
+
+List<Point> generatePointsBetween(Point start, Point end, int numberOfPoints) {
+  List<Point> points = [];
+
+  for (int i = 0; i <= numberOfPoints; i++) {
+    double fraction = i / numberOfPoints.toDouble();
+    double lat = start.latitude + (end.latitude - start.latitude) * fraction;
+    double lng = start.longitude + (end.longitude - start.longitude) * fraction;
+    points.add(Point(latitude: lat, longitude: lng));
+  }
+
+  return points;
 }
